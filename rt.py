@@ -8,15 +8,14 @@ speech_config.speech_recognition_language = 'ru-RU'
 speech_config.speech_synthesis_language = 'ru-RU'
 
 inf = open("E:/AD/b64/test.b64")
-for i in range(3): inf.read()
-byt = base64.b64decode(inf.read())
+for i in range(3): inf.readline()
+byt = base64.b64decode(inf.readline())
+print(byt)
 #print(wave.open("E:/AD/dict/Voice2.wav").getframerate())
-output = wave.open("E:/AD/dict/rec.wav", "wb")
-output.setnchannels(2)
-output.setsampwidth(2)
-output.setframerate(44100)
-output.writeframesraw(byt)
-output.close()
+with open("E:/AD/dict/rec.wav", 'wb') as f:
+    f.write(byt)
+
+
 
 
 def from_file(file_name):
