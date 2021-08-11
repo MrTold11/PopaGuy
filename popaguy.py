@@ -1,6 +1,6 @@
 from subprocess import call
 import speech_recognition as sr
-import AudioProcessing as ap
+#import AudioProcessing as ap
 import time, os, random, math, importlib
 import threading
 import base64
@@ -37,7 +37,7 @@ lastAdFr = 0
 random.seed(lastSpeak)
 adStat = {}
 
-importlib.import_module("AudioProcessing")
+#importlib.import_module("AudioProcessing")
 
 print("Init OK")
 
@@ -46,12 +46,12 @@ def sendAudio(audio, id):
     if len(audio.frame_data) < 200000:
         print("Short - skip")
         return
-    recf = ap.AudioProcessing(audio.get_wav_data())
-    if PROCESS_NOISE:
-        recf.processNoise(2, 0.7)
-    recf.save_to_file("out/rec" + str(id) + WAV)
+    #recf = ap.AudioProcessing(audio.get_wav_data())
+    #if PROCESS_NOISE:
+    #    recf.processNoise(2, 0.7)
+    #recf.save_to_file("out/rec" + str(id) + WAV)
     with open("out/rec" + str(id) + WAV, "rb") as rf:
-        req = requests.post(IP + IP_SEND, files={"rec" + str(id) + ".d64" : (None, base64.b64encode(rf))})
+        req = requests.post(IP + IP_SEND, files={"rec" + str(id) + ".d64" : (None, base64.b64encode(audio.get_wav_data()))})
     if req.status_code == 200:
         print("Send OK")
         ed = str(req.content)[2:-1]
@@ -59,9 +59,11 @@ def sendAudio(audio, id):
             print("Nothing")
         else:
             nid = getOldVoice()
-            inrec = ap.AudioProcessing(base64.b64decode(ed))
-            inrec.set_audio_speed(1.2)
-            inrec.save_to_file(VOICE_PATH + str(nid) + WAV)
+            #inrec = ap.AudioProcessing(base64.b64decode(ed))
+            #inrec.set_audio_speed(1.2)
+            #inrec.save_to_file(VOICE_PATH + str(nid) + WAV)
+            with open(VOICE_PATH + str(nid) + WAV, "wb") as ff:
+                ff.write(base64.b64decode(ed))
             print("Phrase recieved")
 #            call(["aplay", VOICE_PATH + str(nid) + WAV, "-D", "hw:0,0"])
 #            print("Playing...")
@@ -157,9 +159,9 @@ def listAds():
 def playAd():
     global lastAd, lastAdFr
     if int(time.time() - lastAd) < AD_TIMEOUT:
-        return false
+        return False
     if mute and not adMode:
-        return false
+        return False
     minAd = 10000
     nad = None
     for adName in os.listdir(ADS_PATH):
@@ -174,8 +176,8 @@ def playAd():
         call(["aplay", ADS_PATH + "/" + str(nad), "-D", "hw:0,0"])
         adStat[nad] = adStat[nad] + 1
         lastAd = time.time()
-        return true
-    return false
+        return True
+    return False
 
 adSyncThread = threading.Thread(target=sendAudio)
 
