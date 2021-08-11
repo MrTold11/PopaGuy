@@ -6,10 +6,10 @@ import threading
 import base64
 import requests
 
-IP = "http://192.168.217.88:8080/" #Server ip
+IP = "http://192.168.234.88:8080/" #Server ip
 IP_SEND = "process"                #Server path to send audio data
 IP_AD = "listad"                   #Server path to get ad list
-IP_GETAD = "getad/"                #Server path to get ad file (IP_GETAD + name)
+IP_GETAD = "getad"                 #Server path to get ad file
 mute = False                       #Mute parrot?
 adMode = False                     #Play ad only (good for dining room / other loud place)
 AD_TIMEOUT = 60                    #How often to play ads (sec)
@@ -109,7 +109,7 @@ def tryPlay():
 
 # Get ad file from server with name
 def getAd(name):
-    req = requests.post(IP + IP_GETAD + name)
+    req = requests.post(IP + IP_GETAD, files={"adName" : (None, str(name))})
     if req.status_code == 200:
         adl = str(req.content)[2:-1]
         if len(ed) < 40:
@@ -176,6 +176,8 @@ def playAd():
         lastAd = time.time()
         return true
     return false
+
+adSyncThread = threading.Thread(target=sendAudio)
 
 while True:
     if adMode:
