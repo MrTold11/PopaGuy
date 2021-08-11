@@ -43,41 +43,29 @@ def get_range(text_sample):
     
 
 def get_c(s):
-    if tuple(s) in d[len(tuple(s))]:
-        return d[len(tuple(s))][tuple(s)]
-    return 0
+    if len(s) == 0: return n
+    for i in range(len(s), 0, -1):
+        if tuple(s[len(s) - i:]) in d[i]:
+            return d[len(tuple(s[len(s) - i:]))][tuple(s[len(s) - i:])] + 1e-5
+    return 1e-5
 
 
 def predict(s):
     s = s.split()
-    if len(s) < 3:
-        gr_sz = len(s)
-    else:
-        gr_sz = 3
-    gr_sz = 1
-    trgs = nltk.ngrams(s, gr_sz)
-    a = list(trgs)
+    m = 3
+    cur_sen =[]
     prob = 0
-    prob += np.log(get_c(a[0])/n)
-    last = get_c(a[0])
-    currentsentence = []
-    for i in range(len(a[0])):
-        currentsentence.append(a[0][i])
-    for i in range(1, len(a)):
-
-        if len(currentsentence) < m:
-            currentsentence.append(a[i][len(a[i]) - 1])
-        else:
-            currentsentence = currentsentence[1:]
-            currentsentence.append(a[i][len(a[i]) - 1])
-        cur = get_c(currentsentence)
-        if last == 0:
-            last += 1
+    for i in s:
+        if len(cur_sen) == m:
+            cur_sen = cur_sen[1:]
+        cur_sen.append(i)
+        cur = get_c(cur_sen)
+        last = float(get_c(cur_sen[:-1])) + 1e-3
+        if last < 1: last += 1
         prob += np.log(cur/last)
-        last = cur
 
-    return prob/len(s)
+    return prob
 
 
 #print(d[1][("привет",)])
-#while True: print(predict(input()))
+while True: print(predict(input()))
