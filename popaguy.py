@@ -11,9 +11,10 @@ IP_SEND = "process"                #Server path to send audio data
 IP_AD = "listad"                   #Server path to get ad list
 IP_GETAD = "getad"                 #Server path to get ad file
 mute = False                       #Mute parrot?
-adMode = False                     #Play ad only (good for dining room / other loud place)
+adMode = True                      #Play ad only (good for dining room / other loud place)
+AD_MODE_TO = 5                     #How often to play ads in ad mode (sec)
 AD_TIMEOUT = 60                    #How often to play ads (sec)
-AD_SYNC_TO = 60                    #How often to sync ads (sec)
+AD_SYNC_TO = 6                    #How often to sync ads (sec)
 AD_DIVIDER = "$$"                  #String that divide ads' names in requested ad list
 PROCESS_NOISE = False              #Remove noice and increase volume?
 REC_LIMIT = 15                     #Maximum record duration
@@ -70,7 +71,7 @@ def sendAudio(audio, id):
 #            call(["aplay", VOICE_PATH + str(nid) + WAV, "-D", "hw:0,0"])
 #            print("Playing...")
     else:
-        print("Send FAIL")
+        print("Send FAIL with code " + str(req.status_code))
 
 # Return id of the oldest file stored in VOICE_PATH
 def getOldVoice():
@@ -123,13 +124,13 @@ def getAd(name):
                 f.write(base64.b64decode(ed))
             print("Ad recieved")
     else:
-        print("Ad get FAIL. Code: " + str(req.status_code))
+        print("Ad get FAIL with code " + str(req.status_code))
 
 # Get actual ad list and compare it with stored files
 def syncAds():
     print("Ad sync...")
     changed = False
-    req = requests.post(IP + IP_AD)
+    req = requests.post(IP + IP_AD, timeout=2)
     if req.status_code == 200:
         adl = str(req.content)[2:-1].split(AD_DIVIDER)
         for adName in os.listdir(ADS_PATH):
@@ -138,13 +139,14 @@ def syncAds():
             else:
                 changed = True
                 os.remove(ADS_PATH + "/" + adName)
-        for newAd in adl:
-            changed = True
-            getAd(newAd)
+        if not str(req.content) == "b'NON'":
+            for newAd in adl:
+                changed = True
+                getAd(newAd)
         if changed:
             listAds()
     else:
-        print("Ad sync FAIL")
+        print("Ad sync FAIL with code " + str(req.status_code))
 
 def listAds():
     global adStat
@@ -161,10 +163,11 @@ def listAds():
 # Play ad lol
 def playAd():
     global lastAd, lastAdFr
-    if int(time.time() - lastAd) < AD_TIMEOUT:
+    if int(time.time() - lastAd) < AD_MODE_TO:
         return False
-    if mute and not adMode:
-        return False
+    if not adMode:
+        if mute or int(time.time()) - lastAd < AD_TIMEOUT:
+            return False
     minAd = 10000
     nad = None
     for adName in os.listdir(ADS_PATH):
@@ -176,23 +179,28 @@ def playAd():
         print("No ad to play")
     else:
         print("Playing ad...")
-        call(["aplay", ADS_PATH + "/" + str(nad), "-D", "hw:0,0"])
+        call(["mplayer", "-ao", "alsa:noblock:device=hw=0.0", "-really-quiet", ADS_PATH + "/" + str(nad)])
         adStat[nad] = adStat[nad] + 1
         lastAd = time.time()
         return True
     return False
 
 def adSyncLoop():
-    syncAds()
-    time.sleep(60)
+    while True:
+        try:
+            syncAds()
+        except:
+            print("Error during ad sync")
+        time.sleep(AD_SYNC_TO)
 
+listAds()
 adSyncThread = threading.Thread(target=adSyncLoop)
 adSyncThread.start()
 
 while True:
     if adMode:
         playAd()
-        sleep(1)
+        time.sleep(1)
         continue
     try:
         with sr.Microphone() as mic:
