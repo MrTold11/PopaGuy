@@ -6,7 +6,7 @@ import threading
 import base64
 import requests
 
-IP = "http://192.168.234.88:8080/" #Server ip
+IP = "http://192.168.234.90:8080/" #Server ip
 IP_SEND = "process"                #Server path to send audio data
 IP_AD = "listad"                   #Server path to get ad list
 IP_GETAD = "getad"                 #Server path to get ad file
@@ -114,7 +114,7 @@ def tryPlay():
 def getAd(name):
     req = requests.post(IP + IP_GETAD, files={"adName" : (None, str(name))})
     if req.status_code == 200:
-        adl = str(req.content)[2:-1]
+        ed = str(req.content)[2:-1]
         if len(ed) < 40:
             print("No ad recieved during request")
         else:
@@ -122,7 +122,7 @@ def getAd(name):
                 f.write(base64.b64decode(ed))
             print("Ad recieved")
     else:
-        print("Ad get FAIL")
+        print("Ad get FAIL. Code: " + str(req.status_code))
 
 # Get actual ad list and compare it with stored files
 def syncAds():
@@ -137,7 +137,6 @@ def syncAds():
             else:
                 changed = True
                 os.remove(ADS_PATH + "/" + adName)
-        
         for newAd in adl:
             changed = True
             getAd(newAd)
