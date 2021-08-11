@@ -6,7 +6,7 @@ import threading
 import base64
 import requests
 
-IP = "http://192.168.234.76:8080/" #Server ip
+IP = "http://192.168.217.88:8080/" #Server ip
 IP_SEND = "process"                #Server path to send audio data
 IP_AD = "listad"                   #Server path to get ad list
 IP_GETAD = "getad/"                #Server path to get ad file (IP_GETAD + name)
@@ -155,11 +155,11 @@ def listAds():
 
 # Play ad lol
 def playAd():
+    global lastAd, lastAdFr
     if int(time.time() - lastAd) < AD_TIMEOUT:
         return false
     if mute and not adMode:
         return false
-    global lastAd, lastAdFr
     minAd = 10000
     nad = None
     for adName in os.listdir(ADS_PATH):
