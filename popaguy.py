@@ -25,6 +25,7 @@ AZURE_TOKEN = "token"              #Token for Azure (todo)
 ADS_PATH = "ads"                   #Local path to store ad files
 VOICE_PATH = "voice/aud"           #Local path (with part of name) to store phrases
 WAV = ".wav"                       #Audio format
+OGG = ".ogg"
 
 r = sr.Recognizer()
 r.energy_threshold = MIN_VOLUME
@@ -118,7 +119,7 @@ def getAd(name):
         if len(ed) < 40:
             print("No ad recieved during request")
         else:
-            with open(ADS_PATH + "/" + str(name) + WAV, "wb") as f:
+            with open(ADS_PATH + "/" + str(name) + OGG, "wb") as f:
                 f.write(base64.b64decode(ed))
             print("Ad recieved")
     else:
@@ -150,6 +151,8 @@ def listAds():
     msa = 100000
     for oad in adStat:
         msa = min(msa, adStat[oad])
+    if msa == 100000:
+        msa = 0
     oldStat = adStat
     adStat = {}
     for adName in os.listdir(ADS_PATH):
