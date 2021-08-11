@@ -13,8 +13,9 @@ IP_GETAD = "getad"                 #Server path to get ad file
 mute = False                       #Mute parrot?
 adMode = False                     #Play ad only (good for dining room / other loud place)
 AD_TIMEOUT = 60                    #How often to play ads (sec)
+AD_SYNC_TO = 60                    #How often to sync ads (sec)
 AD_DIVIDER = "$$"                  #String that divide ads' names in requested ad list
-PROCESS_NOISE = False               #Remove noice and increase volume?
+PROCESS_NOISE = False              #Remove noice and increase volume?
 REC_LIMIT = 15                     #Maximum record duration
 MIN_VOLUME = 250                   #Volume floor for record to start
 BUFFER_VOICE = 10                  #How many phrases to store?
@@ -179,7 +180,12 @@ def playAd():
         return True
     return False
 
-adSyncThread = threading.Thread(target=sendAudio)
+def adSyncLoop():
+    syncAds()
+    time.sleep(60)
+
+adSyncThread = threading.Thread(target=adSyncLoop)
+adSyncThread.start()
 
 while True:
     if adMode:
