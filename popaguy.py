@@ -6,22 +6,22 @@ import threading
 import base64
 import requests
 
-IP = "http://192.168.234.90:8080/" #Server ip
+IP = "http://192.168.234.64:8080/" #Server ip
 IP_SEND = "process"                #Server path to send audio data
 IP_AD = "listad"                   #Server path to get ad list
 IP_GETAD = "getad"                 #Server path to get ad file
 mute = False                       #Mute parrot?
-adMode = True                      #Play ad only (good for dining room / other loud place)
+adMode = False                      #Play ad only (good for dining room / other loud place)
 AD_MODE_TO = 5                     #How often to play ads in ad mode (sec)
-AD_TIMEOUT = 60                    #How often to play ads (sec)
-AD_SYNC_TO = 6                    #How often to sync ads (sec)
+AD_TIMEOUT = 80                    #How often to play ads (sec)
+AD_SYNC_TO = 10                    #How often to sync ads (sec)
 AD_DIVIDER = "$$"                  #String that divide ads' names in requested ad list
 PROCESS_NOISE = False              #Remove noice and increase volume?
 REC_LIMIT = 15                     #Maximum record duration
-MIN_VOLUME = 250                   #Volume floor for record to start
+MIN_VOLUME = 220                   #Volume floor for record to start
 BUFFER_VOICE = 10                  #How many phrases to store?
-T_MIN = 10                         #Minimum time to pass before playing phrase (sec)
-T_MAX = 420                        #Maximum time to pass before playing phrase (sec) (Divide this by ~4!)
+T_MIN = 5                         #Minimum time to pass before playing phrase (sec)
+T_MAX = 210                        #Maximum time to pass before playing phrase (sec) (Divide this by ~4!)
 AZURE_TOKEN = "token"              #Token for Azure (todo)
 ADS_PATH = "ads"                   #Local path to store ad files
 VOICE_PATH = "voice/aud"           #Local path (with part of name) to store phrases
@@ -46,15 +46,15 @@ print("Init OK")
 
 # Send recorded audio to server and get new phrase or nothing
 def sendAudio(audio, id):
-    if len(audio.frame_data) < 200000:
+    if len(audio.frame_data) < 100000:
         print("Short - skip")
         return
     #recf = ap.AudioProcessing(audio.get_wav_data())
     #if PROCESS_NOISE:
     #    recf.processNoise(2, 0.7)
     #recf.save_to_file("out/rec" + str(id) + WAV)
-    with open("out/rec" + str(id) + WAV, "rb") as rf:
-        req = requests.post(IP + IP_SEND, files={"rec" + str(id) + ".d64" : (None, base64.b64encode(audio.get_wav_data()))})
+    #with open("out/rec" + str(id) + WAV, "rb") as rf:
+    req = requests.post(IP + IP_SEND, files={"rec" + str(id) + ".d64" : (None, base64.b64encode(audio.get_wav_data()))})
     if req.status_code == 200:
         print("Send OK")
         ed = str(req.content)[2:-1]
