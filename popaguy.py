@@ -5,7 +5,7 @@ import threading
 import base64
 import requests
 
-IP = "http://mrtold.tplinkdns.com:4949" #Server ip
+IP = "http://mrtold.tplinkdns.com:4949/" #Server ip
 IP_SEND = "process"                #Server path to send audio data
 IP_AD = "listad"                   #Server path to get ad list
 IP_GETAD = "getad"                 #Server path to get ad file
