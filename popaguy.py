@@ -1,6 +1,5 @@
 from subprocess import call
 import speech_recognition as sr
-#import AudioProcessing as ap
 import time, os, random, math, importlib
 import threading
 import base64
@@ -16,7 +15,6 @@ AD_MODE_TO = 5                     #How often to play ads in ad mode (sec)
 AD_TIMEOUT = 80                    #How often to play ads (sec)
 AD_SYNC_TO = 10                    #How often to sync ads (sec)
 AD_DIVIDER = "$$"                  #String that divide ads' names in requested ad list
-PROCESS_NOISE = False              #Remove noice and increase volume?
 REC_LIMIT = 15                     #Maximum record duration
 MIN_VOLUME = 220                   #Volume floor for record to start
 BUFFER_VOICE = 10                  #How many phrases to store?
@@ -41,8 +39,6 @@ random.seed(lastSpeak)
 adStat = {}
 lastPlay = ""
 
-#importlib.import_module("AudioProcessing")
-
 print("Init OK")
 
 # Send recorded audio to server and get new phrase or nothing
@@ -51,11 +47,6 @@ def sendAudio(audio, id):
         if len(audio.frame_data) < 100000:
             print("Short - skip")
             return
-        #recf = ap.AudioProcessing(audio.get_wav_data())
-        #if PROCESS_NOISE:
-        #    recf.processNoise(2, 0.7)
-        #recf.save_to_file("out/rec" + str(id) + WAV)
-        #with open("out/rec" + str(id) + WAV, "rb") as rf:
         req = requests.post(IP + IP_SEND, files={"rec" + str(id) + ".d64" : (None, base64.b64encode(audio.get_wav_data()))})
         if req.status_code == 200:
             print(" <- Send OK")
@@ -70,8 +61,6 @@ def sendAudio(audio, id):
                 with open(VOICE_PATH + str(nid) + WAV, "wb") as ff:
                     ff.write(base64.b64decode(ed))
                 print(" -> Phrase recieved")
-#                call(["aplay", VOICE_PATH + str(nid) + WAV, "-D", "hw:0,0"])
-#                print("Playing...")
         else:
             print("XX Send FAIL with code " + str(req.status_code))
     except:
