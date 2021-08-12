@@ -83,7 +83,7 @@ def getOldVoice():
 
 # Try playing any sound (weird probability)
 def tryPlay():
-    global freeSeconds, lastSpeak
+    global freeSeconds, lastSpeak, lastPlay
     deltaSpeak = int(time.time() - lastSpeak)
     print("II Delta: " + str(deltaSpeak) + "; free: " + str(freeSeconds))
     if mute or freeSeconds < 1: return
