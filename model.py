@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import nltk
 from nltk.util import ngrams
 from nltk.probability import ConditionalFreqDist
 from nltk.tokenize import word_tokenize
-with open("E:/d/a.txt", encoding='utf-8', ) as f:
+with open("a.txt", encoding='utf-8', ) as f:
     text = f.read()
 
 m = 1
@@ -29,7 +28,7 @@ for i in range(1, len(text)):
     else:
         values = list(map(int, map(str, text[i].split(" ")[:-1])))
         d.append(dict(zip(keys, values)))
-print("done")
+
 
 
 def get_range(text_sample):
@@ -65,7 +64,3 @@ def predict(s):
         prob += np.log(cur/last)
 
     return prob
-
-
-#print(d[1][("привет",)])
-while True: print(predict(input()))

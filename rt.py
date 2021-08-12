@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import azure.cognitiveservices.speech as speechsdk
 import base64
 import wave
@@ -9,11 +8,10 @@ speech_config = speechsdk.SpeechConfig(subscription="29103316047b4c59a3edbadb3c8
 speech_config.speech_recognition_language = 'ru-RU'
 speech_config.speech_synthesis_language = 'ru-RU'
 
-inf = open("E:/AD/b64/test.b64")
+inf = open("sound.b64")
 for i in range(3): inf.readline()
 byt = base64.b64decode(inf.readline())
-#print(wave.open("E:/AD/dict/Voice2.wav").getframerate())
-with open("E:/AD/dict/rec.wav", 'wb') as f:
+with open("NEWSOUND.wav", 'wb') as f:
     f.write(byt)
 
 
@@ -48,7 +46,7 @@ def gen_voice(text, output):
         synthesizer.speak_text_async(text[i])
 
 
-sentences = from_file("E:/AD/dict/rec112.wav").replace('?', '.').replace('!', '.').split('.')
+sentences = from_file("NEWSOUND.wav").replace('?', '.').replace('!', '.').split('.')
 text = []
 for i in sentences:
     if i == '': continue
@@ -57,9 +55,9 @@ for i in sentences:
         if j in numbers:
             buf = buf.replace(j, numbers[j])
     t = predict(buf)
-    if t < -5:
+    if -20 < t < -8:
         print(t)
         text.append(i)
-with open("E:/AD/num.txt", 'w') as f:
+with open("number.txt", 'w') as f:
     f.write(str(len(text)))
-gen_voice(text, "E:/AD/result/")
+gen_voice(text, "")
