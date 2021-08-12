@@ -98,7 +98,7 @@ func (s *anekServer) getReklamaID(w http.ResponseWriter, r *http.Request) {
 	massiv := strings.Split(str, "\n")
 	stry := massiv[3]
 	stry = stry[:len(stry) - 1]
-	fileName := "C:/Users/prokh/GolandProjects/TelegramPopagayBot/" + stry
+	fileName := "ADfiles/" + stry
 	fileUY := fileName + ".ogg"
 	fmt.Println(fileUY)
 	data, err = os.ReadFile(fileUY)
@@ -411,6 +411,7 @@ func (s *VoiceServer) addVoice (w http.ResponseWriter, r *http.Request)  	{
 }
 
 func main() {
+	BotBuild()
 	fmt.Println(os.Executable())
 	s := "HELP"
 	fmt.Println(s)

@@ -4,7 +4,7 @@ import nltk
 from nltk.util import ngrams
 from nltk.probability import ConditionalFreqDist
 from nltk.tokenize import word_tokenize
-with open("C:/Users/prokh/GolandProjects/POPAGAY/a.txt", encoding='utf-8', ) as f:
+with open("a.txt", encoding='utf-8', ) as f:
     text = f.read()
 
 m = 1

@@ -9,10 +9,10 @@ speech_config = speechsdk.SpeechConfig(subscription="29103316047b4c59a3edbadb3c8
 speech_config.speech_recognition_language = 'ru-RU'
 speech_config.speech_synthesis_language = 'ru-RU'
 
-inf = open("C:/Users/prokh/GolandProjects/POPAGAY/sound.b64")
+inf = open("sound.b64")
 for i in range(3): inf.readline()
 byt = base64.b64decode(inf.readline())
-with open("C:/Users/prokh/GolandProjects/POPAGAY/NEWSOUND.wav", 'wb') as f:
+with open("NEWSOUND.wav", 'wb') as f:
     f.write(byt)
 
 
@@ -47,7 +47,7 @@ def gen_voice(text, output):
         synthesizer.speak_text_async(text[i])
 
 
-sentences = from_file("C:/Users/prokh/GolandProjects/POPAGAY/NEWSOUND.wav").replace('?', '.').replace('!', '.').split('.')
+sentences = from_file("NEWSOUND.wav").replace('?', '.').replace('!', '.').split('.')
 text = []
 for i in sentences:
     if i == '': continue
@@ -59,6 +59,6 @@ for i in sentences:
     if -20 < t < -8:
         print(t)
         text.append(i)
-with open("C:/Users/prokh/GolandProjects/POPAGAY/number.txt", 'w') as f:
+with open("number.txt", 'w') as f:
     f.write(str(len(text)))
-gen_voice(text, "C:/Users/prokh/GolandProjects/POPAGAY/")
+gen_voice(text, "")
