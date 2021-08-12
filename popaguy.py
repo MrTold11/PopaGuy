@@ -39,6 +39,7 @@ lastAd = time.time()
 lastAdFr = 0
 random.seed(lastSpeak)
 adStat = {}
+lastPlay = ""
 
 #importlib.import_module("AudioProcessing")
 
@@ -57,10 +58,10 @@ def sendAudio(audio, id):
         #with open("out/rec" + str(id) + WAV, "rb") as rf:
         req = requests.post(IP + IP_SEND, files={"rec" + str(id) + ".d64" : (None, base64.b64encode(audio.get_wav_data()))})
         if req.status_code == 200:
-            print("Send OK")
+            print(" <- Send OK")
             ed = str(req.content)[2:-1]
             if len(ed) < 40:
-                print("Nothing")
+                print(" -> Nothing")
             else:
                 nid = getOldVoice()
                 #inrec = ap.AudioProcessing(base64.b64decode(ed))
@@ -68,13 +69,13 @@ def sendAudio(audio, id):
                 #inrec.save_to_file(VOICE_PATH + str(nid) + WAV)
                 with open(VOICE_PATH + str(nid) + WAV, "wb") as ff:
                     ff.write(base64.b64decode(ed))
-                print("Phrase recieved")
+                print(" -> Phrase recieved")
 #                call(["aplay", VOICE_PATH + str(nid) + WAV, "-D", "hw:0,0"])
 #                print("Playing...")
         else:
-            print("Send FAIL with code " + str(req.status_code))
+            print("XX Send FAIL with code " + str(req.status_code))
     except:
-        print("An error ocupped during audio sending")
+        print("XX An error ocupped during audio sending")
         
 
 # Return id of the oldest file stored in VOICE_PATH
@@ -95,18 +96,18 @@ def getOldVoice():
 def tryPlay():
     global freeSeconds, lastSpeak
     deltaSpeak = int(time.time() - lastSpeak)
-    print("Delta: " + str(deltaSpeak) + "; free: " + str(freeSeconds))
+    print("II Delta: " + str(deltaSpeak) + "; free: " + str(freeSeconds))
     if mute or freeSeconds < 1: return
     if (playAd()):
         return
     if random.randrange(100) < math.sin((deltaSpeak - T_MIN) * MUL_CONST) * 100:
-        print("Speak after " + str(freeSeconds) + " seconds silence; " + str(deltaSpeak) + " seconds after the last speech")
+        print("OO Speak after " + str(freeSeconds) + " seconds silence; " + str(deltaSpeak) + " seconds after the last speech")
         freeSeconds = 0
         lastSpeak = time.time()
         fid = "none"
         while True:
             fid = VOICE_PATH + str(random.randrange(BUFFER_VOICE)) + WAV
-            if os.path.isfile(fid):
+            if os.path.isfile(fid) and not lastPlay == fid:
                 break
             if freeSeconds > 20:
                 freeSeconds = 0
@@ -114,6 +115,7 @@ def tryPlay():
                 return
             freeSeconds += 1
         freeSeconds = 0
+        lastPlay = fid
         call(["aplay", fid, "-D", "hw:0,0"])
 
 # Get ad file from server with name
@@ -122,17 +124,17 @@ def getAd(name):
     if req.status_code == 200:
         ed = str(req.content)[2:-1]
         if len(ed) < 40:
-            print("No ad recieved during request")
+            print("XX No ad recieved during request")
         else:
             with open(ADS_PATH + "/" + str(name) + OGG, "wb") as f:
                 f.write(base64.b64decode(ed))
-            print("Ad recieved")
+            print(" -> Ad recieved")
     else:
-        print("Ad get FAIL with code " + str(req.status_code))
+        print("XX Ad get FAIL with code " + str(req.status_code))
 
 # Get actual ad list and compare it with stored files
 def syncAds():
-    print("Ad sync...")
+    print(" <- Ad sync...")
     changed = False
     req = requests.post(IP + IP_AD, timeout=2)
     if req.status_code == 200:
@@ -150,7 +152,7 @@ def syncAds():
         if changed:
             listAds()
     else:
-        print("Ad sync FAIL with code " + str(req.status_code))
+        print("XX Ad sync FAIL with code " + str(req.status_code))
 
 def listAds():
     global adStat
@@ -182,7 +184,7 @@ def playAd():
     if nad == None:
         print("No ad to play")
     else:
-        print("Playing ad...")
+        print("OO Playing ad...")
         call(["mplayer", "-ao", "alsa:noblock:device=hw=0.0", "-really-quiet", ADS_PATH + "/" + str(nad)])
         adStat[nad] = adStat[nad] + 1
         lastAd = time.time()
@@ -194,7 +196,7 @@ def adSyncLoop():
         try:
             syncAds()
         except:
-            print("Error during ad sync")
+            print("XX Error during ad sync")
         time.sleep(AD_SYNC_TO)
 
 listAds()
