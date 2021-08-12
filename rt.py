@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import azure.cognitiveservices.speech as speechsdk
 import base64
 import wave

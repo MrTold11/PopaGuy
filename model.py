@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import nltk
 from nltk.util import ngrams
@@ -65,5 +64,3 @@ def predict(s):
         prob += np.log(cur/last)
 
     return prob
-
-
