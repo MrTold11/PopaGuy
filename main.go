@@ -1,6 +1,7 @@
 package main
 
 import (
+        "PopaGuy/botbuild"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -161,6 +162,7 @@ func (s *anekServer) getReklama(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+
 	ma := make(map[int64]int64)
 	err = json.Unmarshal(data, &ma)
 	toWrite := ""
@@ -178,7 +180,7 @@ func (s *anekServer) getReklama(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fmt.Println(id)
-		if time.Now().UnixMilli() - id < number * 1000 {
+		if (time.Now().UnixNano() / int64(time.Millisecond)) - id < number * 1000 {
 			fmt.Println("HERE")
 
 			fmt.Println(name)
@@ -188,6 +190,7 @@ func (s *anekServer) getReklama(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(name)
 	}
+
 	if toWrite != "" {
 		toWrite = toWrite[0:len(toWrite) - 2]
 		fmt.Println(toWrite)
@@ -228,7 +231,7 @@ func (s * VoiceServer) handleVoice(w http.ResponseWriter, r *http.Request) {
 
 
 
-	er := os.WriteFile("sound.b64", rawbody, 0)
+	er := os.WriteFile("sound.b64", rawbody, 0644)
 	if er != nil {
 		fmt.Println(er)
 		http.Error(
@@ -248,7 +251,7 @@ func (s * VoiceServer) handleVoice(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(path)
 		*/
 
-		c1 := exec.Command("python",`./rt.py`)
+		c1 := exec.Command("python3", "./rt.py")
 		 if errr := c1.Run(); errr != nil {
 			fmt.Println(errr)
 		}
@@ -295,16 +298,6 @@ func (s * VoiceServer) handleVoice(w http.ResponseWriter, r *http.Request) {
 			fileNameToStore := fmt.Sprintf("sentence%d", globalCounter)
 			globalCounter = globalCounter + 1
 			fmt.Println(fileNameToStore)
-			err = os.WriteFile("toStoreAllPhrases/" + fileNameToStore + ".wav", data, 0644)
-			if err != nil {
-				fmt.Println("GO FUCK YOURSELF")
-				http.Error (
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
 			encoded := base64.StdEncoding.EncodeToString(data)
 			err = os.WriteFile("testingForBot.b64",[]byte (encoded) , 0644)
 			w.Write([]byte (encoded) )
@@ -411,7 +404,7 @@ func (s *VoiceServer) addVoice (w http.ResponseWriter, r *http.Request)  	{
 }
 
 func main() {
-	BotBuild()
+	go botbuild.BotBuild()
 	fmt.Println(os.Executable())
 	s := "HELP"
 	fmt.Println(s)
@@ -433,5 +426,8 @@ func main() {
 	mux.Handle("/getAnek", http.HandlerFunc(anekServerNew.getRandomAnek))
 	mux.Handle("/listad", http.HandlerFunc(anekServerNew.getReklama))
 	mux.Handle("/getad", http.HandlerFunc(anekServerNew.getReklamaID))
-	http.ListenAndServe("192.168.234.64:8080", mux)
+	err := http.ListenAndServe("0.0.0.0:4949", mux)
+        if err != nil {
+            fmt.Printf("Server failed: ", err.Error())
+        }
 }
