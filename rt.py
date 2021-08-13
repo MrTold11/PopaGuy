@@ -7,7 +7,7 @@ from azure.cognitiveservices.speech.audio import AudioOutputConfig
 speech_config = speechsdk.SpeechConfig(subscription="29103316047b4c59a3edbadb3c899c81", endpoint="https://northeurope.api.cognitive.microsoft.com/sts/v1.0/issuetoken")
 speech_config.speech_recognition_language = 'ru-RU'
 speech_config.speech_synthesis_language = 'ru-RU'
-speech_config.speech_synthesis_voice_name = 'ru-RU-DmitryNeural'
+#speech_config.speech_synthesis_voice_name = 'ru-RU-DmitryNeural'
 
 inf = open("sound.b64")
 for i in range(3): inf.readline()
@@ -41,11 +41,22 @@ def from_file(file_name):
 def gen_voice(text, output):
     result = []
     for i in range(len(text)):
-        print('save')
-        audio_config = AudioOutputConfig(filename="sentence" + str(i) + '.wav')
-        synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
-        synthesizer.speak_text_async(text[i])
-
+        s = """<speak version="1.0" xmlns="https://www.w3.org/2001/10/synthesis" xml:lang="ru-RU">
+                    <voice name="ru-RU-Irina">
+                        <prosody pitch="1000Hz" contour="(60%,-60%) (100%,+80%)">
+                            """+ text[i] +"""
+                        </prosody>
+                    </voice>
+            </speak>"""
+        with open('style.xml', 'w') as f:
+            f.write(s)
+#        audio_config = AudioOutputConfig(filename="sentence" + str(i) + '.wav')
+        synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=None)
+        ssml_string = open('style.xml', 'r').read()
+        result = synthesizer.speak_ssml_async(ssml_string).get()
+        stream = AudioDataStream(result)
+#        synthesizer.speak_text_async(text[i])
+        stream.save_to_wav_file("sentence" + str(i) + ".wav")
 
 sentences = from_file("NEWSOUND.wav").replace('?', '.').replace('!', '.').split('.')
 text = []
