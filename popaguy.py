@@ -9,24 +9,20 @@ IP = "http://mrtold.tplinkdns.com:4949/" #Server ip
 IP_SEND = "process"                #Server path to send audio data
 IP_AD = "listad"                   #Server path to get ad list
 IP_GETAD = "getad"                 #Server path to get ad file
-IP_GETCOM = "getcomm"              #Server path to get commands
 mute = False                       #Mute parrot?
 adMode = False                     #Play ad only (good for dining room / other loud place)
-runPopaguy = True                  #Run popaguy?
-AD_MODE_TO = 15                    #How often to play ads in ad mode (sec)
+AD_MODE_TO = 5                     #How often to play ads in ad mode (sec)
 AD_TIMEOUT = 80                    #How often to play ads (sec)
 AD_SYNC_TO = 10                    #How often to sync ads (sec)
 AD_DIVIDER = "$$"                  #String that divide ads' names in requested ad list
-CMD_DIVIDER = "&&"                 #String that divide commands list
-CMD_AUDIO_DIVIDER = "@@"           #String that divide commands from audio data
 REC_LIMIT = 15                     #Maximum record duration
 MIN_VOLUME = 220                   #Volume floor for record to start
 BUFFER_VOICE = 10                  #How many phrases to store?
 T_MIN = 5                          #Minimum time to pass before playing phrase (sec)
 T_MAX = 210                        #Maximum time to pass before playing phrase (sec) (Divide this by ~4!)
+AZURE_TOKEN = "token"              #Token for Azure (todo)
 ADS_PATH = "ads"                   #Local path to store ad files
-PHRASES_PATH = "phrases"           #Local path to store phrases
-VOICE_PATH = "voice/aud"           #Local path (with part of name) to store heared phrases
+VOICE_PATH = "voice/aud"           #Local path (with part of name) to store phrases
 WAV = ".wav"                       #Audio format
 OGG = ".ogg"
 
@@ -111,63 +107,6 @@ def tryPlay():
         lastPlay = fid
         call(["aplay", fid, "-D", "hw:0,0"])
 
-#Execute sent command (lowercase)
-def runCommand(cmd, data=None):
-    match cmd:
-        case 'mute' | 'sound off' | 'mute on':
-            mute = True
-            print('-> Muted')
-        case 'unmute' | 'sound on' | 'mute off':
-            mute = False
-            print('-> Unmuted')
-        case 'admode' | 'ad on' | 'ad':
-            adMode = True
-            print('-> Ad mode on')
-        case 'unadmode' | 'ad off' | 'unad' | 'noad' | 'no ad':
-            adMode = False
-            print('-> Ad mode off')
-        case 'start' | 'on' | 'enable':
-            runPopaguy = True
-            print('-> Popaguy ON')
-        case 'stop' | 'off' | 'disable':
-            runPopaguy = False
-            print('-> Popaguy OFF')
-        case 'clear' | 'clean':
-            print('-> Clearing voice files...')
-            vPath = VOICE_PATH.split('/')[0]
-            for voiceName in os.listdir(vPath):
-                os.remove(vPath + "/" + voiceName)
-        case 'saveaudio':
-            if data == None or len(data) < 40:
-                print("XX No audio recieved during 'saveaudio'")
-            else:
-                with open(PHRASES_PATH + "/tgaudio" + OGG, "wb") as f:
-                    f.write(base64.b64decode(data))
-                print('-> Audio saved')
-        case 'playaudio':
-            print('-> Playing audio...')
-            call(["mplayer", "-ao", "alsa:noblock:device=hw=0.0", "-really-quiet", PHRASES_PATH + "/tgaudio" + OGG])
-
-
-#Get remote commands
-def getCommands():
-    req = requests.get(IP + IP_GETCOM, timeout = 5)
-    if req.status_code == 200:
-        cmdraw = req.text
-        if cmdraw == "Nothing":
-            return true
-        aud = None
-        if CMD_AUDIO_DIVIDER in cmds:
-            audAndCmd = cmdraw.split(CMD_AUDIO_DIVIDER)
-            cmdraw = audAndCmd[0]
-            aud = audAndCmd[1]
-        for cmd in cmdraw.split(CMD_DIVIDER):
-            runCommand(cmd.lower(), aud)
-        return true
-    else:
-        print("XX Commands sync failed with code " + str(req.status_code))
-        return false
-
 # Get ad file from server with name
 def getAd(name):
     req = requests.post(IP + IP_GETAD, files={"adName" : (None, str(name))})
@@ -241,16 +180,6 @@ def playAd():
         return True
     return False
 
-def cmdLoop():
-    while True:
-        startTime = time.time()
-        try:
-            getCommands()
-        except:
-            print("XX Error during commands sync")
-            time.sleep(5)
-        time.sleep(max(0, time.time() - startTime))
-
 def adSyncLoop():
     while True:
         try:
@@ -262,9 +191,6 @@ def adSyncLoop():
 listAds()
 adSyncThread = threading.Thread(target=adSyncLoop)
 adSyncThread.start()
-
-cmdSyncThread = threading.Thread(target=cmdLoop)
-cmdSyncThread.start()
 
 while True:
     if adMode:
