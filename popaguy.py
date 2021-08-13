@@ -89,7 +89,7 @@ def tryPlay():
     if mute or freeSeconds < 1: return
     if (playAd()):
         return
-    if random.randrange(100) < math.sin((deltaSpeak - T_MIN) * MUL_CONST) * 100:
+    if random.randrange(100) < math.sin((deltaSpeak - T_MIN) * MUL_CONST) * 100 or deltaSpeak > T_MAX:
         print("OO Speak after " + str(freeSeconds) + " seconds silence; " + str(deltaSpeak) + " seconds after the last speech")
         freeSeconds = 0
         lastSpeak = time.time()
