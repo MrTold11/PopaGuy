@@ -43,7 +43,7 @@ def gen_voice(text, output):
     for i in range(len(text)):
         s = """<speak version="1.0" xmlns="https://www.w3.org/2001/10/synthesis" xml:lang="ru-RU">
                     <voice name="ru-RU-Irina">
-                        <prosody pitch="1000Hz" contour="(60%,-60%) (100%,+80%)">
+                        <prosody volume="+40%" pitch="1000Hz" contour="(60%,-60%) (100%,+80%)">
                             """+ text[i] +"""
                         </prosody>
                     </voice>
@@ -67,7 +67,7 @@ for i in sentences:
         if j in numbers:
             buf = buf.replace(j, numbers[j])
     t = predict(buf)
-    if -20 < t < -8:
+    if -20 < t < -10:
         print(t)
         text.append(i)
 print('len: ' + str(len(text)))
